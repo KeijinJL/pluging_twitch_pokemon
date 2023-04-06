@@ -34,25 +34,18 @@ const PlayerView = ({ player }) => {
     const messageRef = useRef(null);
     const spriteRef = useRef(null);
     const [message, setMessage] = useState(player.message);
-    let gsapMessage;
-
-    const handleMessageTransparency = (gsapMessage, messageRef) => {
-        if (gsapMessage) {
-            gsapMessage.kill();
-        }
-        fadeIn(messageRef, 0, 1);
-        gsapMessage = fadeOut(messageRef);
-    }
+    const [classCSS, setClassCSS] = useState("bubble");
+    let timeoutHidden;
 
     useEffect(() => {
         animatePlayer(playerRef, spriteRef);
-        handleMessageTransparency(gsapMessage, messageRef);
+        timeoutHidden = handleMessageHidden(timeoutHidden, setClassCSS);
     }, []);
 
     TwitchManager.onNewMessage((p, channel, tags, message, self) => {
         if (p.name === player.name) {
             setMessage(message);
-            handleMessageTransparency(gsapMessage, messageRef);
+            timeoutHidden = handleMessageHidden(timeoutHidden, setClassCSS);
         }
     });
 
@@ -60,9 +53,18 @@ const PlayerView = ({ player }) => {
         <div ref={playerRef} className="player">
             <Title>{player.name}</Title>
             <img ref={spriteRef} className="pokemon" src={player.avatar} />
-            <Message ref={messageRef} className="bubble">{message}</Message>
+            <Message ref={messageRef} className={classCSS}>{message}</Message>
         </div>
     )
+}
+
+function handleMessageHidden(timeoutHidden, setClassCSS) {
+    if (timeoutHidden) {
+        clearTimeout(timeoutHidden);
+    }
+    setClassCSS("bubble");
+    timeoutHidden = setTimeout(() => { setClassCSS("bubble hidden"); }, 3000);
+    return timeoutHidden;
 }
 
 function animatePlayer(playerRef, spriteRef) {
@@ -89,24 +91,6 @@ function movePlayer(playerRef, spriteRef) {
         x,
         y,
         ease: 'power2.out',
-    });
-}
-
-function fadeOut(ref, delay = 3, duration = 3) {
-    gsap.set(ref.current, { opacity: 1 });
-    return gsap.delayedCall(delay, () => {
-        gsap.to(ref.current, {
-            duration,
-            opacity: 0
-        })
-    });
-}
-function fadeIn(ref, delay = 0, duration = 2) {
-    return gsap.delayedCall(delay, () => {
-        gsap.to(ref.current, {
-            duration,
-            opacity: 1
-        })
     });
 }
 
