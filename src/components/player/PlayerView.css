@@ -1,0 +1,12 @@
+.player {
+    position: relative;
+    width: 5em;
+    height: 5em;
+}
+
+.player .pokemon {
+    position: absolute;
+    bottom: 0;
+    height: 4em;
+    width: 5em;
+}
