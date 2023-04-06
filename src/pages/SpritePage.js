@@ -16,7 +16,7 @@ const SpritePage = () => {
     <div className="SpritePage">
       {
         players.map((player, index) => {
-          return <PlayerView player={player} name={player.name} initMessage={player.message} avatar={player.avatar} key={index} />
+          return <PlayerView player={player} key={index} />
         })
       }
     </div>

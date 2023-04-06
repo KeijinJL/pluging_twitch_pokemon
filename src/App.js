@@ -6,7 +6,7 @@ import './App.css';
 import TwitchManager from './common/twitch-manager/TwitchManager';
 
 function App() {
-  TwitchManager.init('keijinjl');
+  TwitchManager.init('kieirra');
   return (
     <BrowserRouter>
       <Routes>
