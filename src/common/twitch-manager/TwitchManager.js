@@ -22,12 +22,13 @@ class TwitchManager {
         client.connect();
         client.on('message', (channel, tags, message, self) => {
             if (tags && tags["display-name"]) {
-                const player = players.find((player) => player.name === tags["display-name"]);
+                let player = players.find((player) => player.name === tags["display-name"]);
                 if (player == undefined) {
+                    player = new Player(tags["display-name"])
+                    players.push(player);
                     onNewPlayerCallback(channel, tags, message, self);
-                    players.push(new Player(tags["display-name"], message));
                 }
-                else if (message) {
+                if (message) {
                     onNewMessageCallback(player, channel, tags, message, self);
                     if (tags.emotes) {
                         Object.entries(tags.emotes).forEach(([id, positions]) => {
