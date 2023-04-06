@@ -1,9 +1,12 @@
 import tmi from 'tmi.js';
 import Player from '../player/Player';
+import Emote from '../emote/Emote';
 
 const players = [];
+const emotes = [];
 let onNewPlayerCallback = (channel, tags, message, self) => { };
 let onNewMessageCallback = (player, channel, tags, message, self) => { };
+let onNewEmoteCallback = (channel, tags, message, self) => { };
 
 class TwitchManager {
 
@@ -26,6 +29,15 @@ class TwitchManager {
                 }
                 else if (message) {
                     onNewMessageCallback(player, channel, tags, message, self);
+                    if (tags.emotes) {
+                        Object.entries(tags.emotes).forEach(([id, positions]) => {
+                            const emote = emotes.find((emote) => emote.id === id);
+                            if (emote == undefined) {
+                                onNewEmoteCallback(channel, tags, message, self);
+                                emotes.push(new Emote(id));
+                            }
+                        })
+                    }
                 }
             }
         });
@@ -37,6 +49,10 @@ class TwitchManager {
 
     static onNewMessage(callback) {
         onNewMessageCallback = callback;
+    }
+
+    static onNewEmote(callback) {
+        onNewEmoteCallback = callback;
     }
 }
 
