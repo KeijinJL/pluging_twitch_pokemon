@@ -5,14 +5,15 @@ import Emote from '../common/emote/Emote.js';
 
 const EmotesPage = () => {
     const [emotes, setEmotes] = useState([]);
+    const [tags, setTags] = useState([]);
 
     TwitchManager.onNewEmote((channel, tags, message, self) => {
         const newEmotes = [];
+        setTags(tags)
         Object.entries(tags.emotes).forEach(([id, positions]) => {
-            const emote = emotes.find((emote) => emote.id === id);
-            if (emote == undefined) {
-                newEmotes.push(new Emote(id));
-            }
+          Object.entries(positions).forEach(() => {
+            newEmotes.push(new Emote(id));
+          })
         })
         // @ts-ignore
         setEmotes(newEmotes);
@@ -24,6 +25,7 @@ const EmotesPage = () => {
         emotes.map((emote, index) => {
           return <EmoteView id={emote.id} key={index} />
         })
+        //JSON.stringify(tags)
       }
     </div>
   );

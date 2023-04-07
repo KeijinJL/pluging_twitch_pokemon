@@ -31,11 +31,10 @@ class TwitchManager {
                     onNewMessageCallback(player, channel, tags, message, self);
                     if (tags.emotes) {
                         Object.entries(tags.emotes).forEach(([id, positions]) => {
-                            const emote = emotes.find((emote) => emote.id === id);
-                            if (emote == undefined) {
-                                onNewEmoteCallback(channel, tags, message, self);
-                                emotes.push(new Emote(id));
-                            }
+                            Object.entries(positions).forEach(() => {
+                              onNewEmoteCallback(channel, tags, message, self);
+                              emotes.push(new Emote(id));
+                            })
                         })
                     }
                 }
