@@ -29,36 +29,46 @@ const Message = styled.div`
     font-size: 0.8em;
 `
 
-const PlayerView = ({ name = "Unknown" }) => {
+const PlayerView = ({ player }) => {
     const playerRef = useRef(null);
     const messageRef = useRef(null);
     const spriteRef = useRef(null);
-    const [message, setMessage] = useState("");
+    const [message, setMessage] = useState(player.message);
+    const [classCSS, setClassCSS] = useState("bubble");
+    let timeoutHidden;
 
     useEffect(() => {
-        animatePlayer(playerRef, messageRef, spriteRef);
+        animatePlayer(playerRef, spriteRef);
+        timeoutHidden = handleMessageHidden(timeoutHidden, setClassCSS);
     }, []);
 
-    TwitchManager.onNewMessage((player, channel, tags, message, self) => {
-        if (player.name === name) {
+    TwitchManager.onNewMessage((p, channel, tags, message, self) => {
+        if (p.name === player.name) {
             setMessage(message);
-            messageRef.current.style.opacity = 1;
-            fadeText(messageRef);
+            timeoutHidden = handleMessageHidden(timeoutHidden, setClassCSS);
         }
     });
 
     return (
         <div ref={playerRef} className="player">
-            <Title>{name}</Title>
-            <img ref={spriteRef} className="pokemon" src={getRandomImageUrl()} />
-            <Message ref={messageRef} className="bubble">{message}</Message>
+            <Title>{player.name}</Title>
+            <img ref={spriteRef} className="pokemon" src={player.avatar} />
+            <Message ref={messageRef} className={classCSS}>{message}</Message>
         </div>
     )
 }
 
-function animatePlayer(playerRef, messageRef, spriteRef) {
+function handleMessageHidden(timeoutHidden, setClassCSS) {
+    if (timeoutHidden) {
+        clearTimeout(timeoutHidden);
+    }
+    setClassCSS("bubble");
+    timeoutHidden = setTimeout(() => { setClassCSS("bubble hidden"); }, 3000);
+    return timeoutHidden;
+}
+
+function animatePlayer(playerRef, spriteRef) {
     movePlayer(playerRef, spriteRef);
-    fadeText(messageRef);
     setInterval(() => {
         movePlayer(playerRef, spriteRef);
     }, 10000);
@@ -84,24 +94,6 @@ function movePlayer(playerRef, spriteRef) {
     });
 }
 
-function fadeText(bubbleRef) {
-    gsap.set(bubbleRef.current, { opacity: 1 });
-    gsap.delayedCall(3, () => {
-        gsap.to(bubbleRef.current, {
-            duration: 3,
-            opacity: 0
-        })
-    });
-}
-
-function getRandomImageUrl() {
-    const urls = [
-        "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/3d8211da-5332-472f-8236-77760a37b5d2/d74eqjd-c375362d-e8ec-4e49-a89c-42b9f5368fd6.gif?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzNkODIxMWRhLTUzMzItNDcyZi04MjM2LTc3NzYwYTM3YjVkMlwvZDc0ZXFqZC1jMzc1MzYyZC1lOGVjLTRlNDktYTg5Yy00MmI5ZjUzNjhmZDYuZ2lmIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.Nz9wOG1ZlMoastpBrsF6D72p3QrRO5VfBA2JOw6c-hw",
-        "https://fc06.deviantart.net/fs71/f/2014/031/d/a/jinx_lol_pixel_by_kajinman-d732j63.gif"
-    ];
-    const randomIndex = Math.floor(Math.random() * urls.length);
-    return urls[randomIndex];
-}
 
 
 export default PlayerView;

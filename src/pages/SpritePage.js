@@ -7,7 +7,7 @@ const SpritePage = () => {
   const [players, setPlayers] = useState([]);
 
   TwitchManager.onNewPlayer((channel, tags, message, self) => {
-    const newPlayers = [...players, new Player(tags["display-name"])];
+    const newPlayers = [...players, new Player(tags["display-name"], message)];
     // @ts-ignore
     setPlayers(newPlayers);
   });
@@ -16,7 +16,7 @@ const SpritePage = () => {
     <div className="SpritePage">
       {
         players.map((player, index) => {
-          return <PlayerView name={player.name} key={index} />
+          return <PlayerView player={player} key={index} />
         })
       }
     </div>

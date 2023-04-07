@@ -10,3 +10,12 @@
     height: 4em;
     width: 5em;
 }
+
+.player .bubble {
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.player .bubble.hidden {
+    opacity: 0;
+}
