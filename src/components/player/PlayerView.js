@@ -4,6 +4,8 @@ import "./PlayerView.css";
 import styled from "styled-components";
 import TwitchManager from "../../common/twitch-manager/TwitchManager";
 
+let lastTime = 0, timeToMovePlayer = 0, timeToHidePlayer = 20000, timeToHideMessage = 0;
+
 const Title = styled.span`
     display: inline-block;
     position: absolute;
@@ -35,19 +37,66 @@ const PlayerView = ({ player }) => {
     const spriteRef = useRef(null);
     const [message, setMessage] = useState(player.message);
     const [classCSS, setClassCSS] = useState("bubble");
-    let timeoutHidden;
+
+    const animatePlayerAndMessage = (now) => {
+        let elapsedTime = now - lastTime;
+        lastTime = now;
+
+        timeToMovePlayer -= elapsedTime;
+        if (timeToMovePlayer <= 0) {
+            movePlayer(playerRef, spriteRef);
+            timeToMovePlayer = 5000;
+        }
+
+        timeToHideMessage -= elapsedTime;
+        if (timeToHideMessage <= 0) {
+            hideMessage();
+        }
+
+        timeToHidePlayer -= elapsedTime;
+        if (timeToHidePlayer <= 0) {
+            hidePlayer();
+        } else {
+            // don't know why i need to do this, but it works
+            playerRef.current.style.opacity = 1;
+        }
+
+        requestAnimationFrame(animatePlayerAndMessage);
+    }
 
     useEffect(() => {
-        animatePlayer(playerRef, spriteRef);
-        timeoutHidden = handleMessageHidden(timeoutHidden, setClassCSS);
+        animatePlayerAndMessage(0);
     }, []);
 
     TwitchManager.onNewMessage((p, channel, tags, message, self) => {
         if (p.name === player.name) {
-            setMessage(message);
-            timeoutHidden = handleMessageHidden(timeoutHidden, setClassCSS);
+            displayPlayer();
+            displayMessage(message);
         }
     });
+
+    const hideMessage = () => {
+        setClassCSS("bubble hidden");
+    }
+
+    function displayMessage(message) {
+        timeToHideMessage = 5000;
+        setClassCSS("bubble");
+        setMessage(message);
+    }
+
+    const hidePlayer = () => {
+        if (playerRef && playerRef.current) {
+            playerRef.current.style.opacity = 0;
+        }
+    }
+
+    const displayPlayer = () => {
+        timeToHidePlayer = 20000;
+        if (playerRef && playerRef.current) {
+            playerRef.current.style.opacity = 1;
+        }
+    }
 
     return (
         <div ref={playerRef} className="player">
@@ -58,21 +107,6 @@ const PlayerView = ({ player }) => {
     )
 }
 
-function handleMessageHidden(timeoutHidden, setClassCSS) {
-    if (timeoutHidden) {
-        clearTimeout(timeoutHidden);
-    }
-    setClassCSS("bubble");
-    timeoutHidden = setTimeout(() => { setClassCSS("bubble hidden"); }, 3000);
-    return timeoutHidden;
-}
-
-function animatePlayer(playerRef, spriteRef) {
-    movePlayer(playerRef, spriteRef);
-    setInterval(() => {
-        movePlayer(playerRef, spriteRef);
-    }, 10000);
-}
 
 function movePlayer(playerRef, spriteRef) {
     const x = Math.random() * (window.innerWidth - 70);
@@ -87,12 +121,13 @@ function movePlayer(playerRef, spriteRef) {
     }
 
     gsap.to(playerRef.current, {
-        duration: 10,
+        duration: 5,
         x,
         y,
         ease: 'power2.out',
     });
 }
+
 
 
 
